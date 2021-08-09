@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Monitor</title>
+
+    <style>
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+        body {
+            line-height: 1;
+        }
+        ol, ul {
+            list-style: none;
+        }
+        blockquote, q {
+            quotes: none;
+        }
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+            content: '';
+            content: none;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        html {
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: system, -apple-system, ".SFNSText-Regular", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-weight: 700;
+        }
+
+        #clear-repository-info {
+            position: absolute;
+            right: 2rem;
+            top: 2rem;
+
+            text-decoration: underline;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success  {
+            background-color: #8ed48e;
+        }
+
+        .in-progress  {
+            background-color: #f3eaa2;
+        }
+
+        .other  {
+            background-color: #f5d09e;
+        }
+
+        .failure  {
+            background-color: #f3a4a4;
+        }
+    </style>
+</head>
+
+<body class="in-progress">
+
+<form id="repository-info">
+    <label>
+        Owner
+        <input type="text" name="owner">
+    </label>
+    <label>
+        Repo
+        <input type="text" name="repo">
+    </label>
+    <label>
+        Token
+        <input type="text" name="github-token">
+    </label>
+    <button type="submit">Submit</button>
+</form>
+
+<span id="clear-repository-info">clear</span>
+
+<div id="status"></div>
+
+<h1 id="message"></h1>
+<h2 id="project"></h2>
+
+<script>
+    const repositoryInfoForm = document.getElementById("repository-info");
+
+    updateStatus()
+    setInterval(updateStatus, 10_000)
+
+    repositoryInfoForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const owner = e.target.querySelector("[name=owner]").value;
+        const repo = e.target.querySelector("[name=repo]").value;
+        const token = e.target.querySelector("[name=github-token]").value;
+
+        setRepositoryInfo(owner, repo, token)
+        updateStatus()
+    });
+
+    document.getElementById("clear-repository-info").addEventListener("click", (e) => {
+        e.preventDefault();
+        clearRepositoryInfo()
+        updateStatus()
+    });
+
+    function setRepositoryInfo(owner, repo, token) {
+        localStorage.setItem("owner", owner)
+        localStorage.setItem("repo", repo)
+        localStorage.setItem("token", token)
+    }
+
+    function clearRepositoryInfo() {
+        localStorage.clear()
+    }
+
+    async function updateStatus() {
+        if (repositoryInfoExists()) {
+            const owner = localStorage.getItem("owner")
+            const repo = localStorage.getItem("repo")
+            const token = localStorage.getItem("token")
+
+            const outcome = await fetchStatus(owner, repo, token)
+            postStatus(outcome)
+        } else {
+            postStatus({})
+        }
+
+        toggleInfoForm()
+    }
+
+    function repositoryInfoExists() {
+        return !!localStorage.getItem("owner") && !!localStorage.getItem("repo")
+    }
+
+    function toggleInfoForm() {
+        if (repositoryInfoExists()) {
+            repositoryInfoForm.classList.add("hidden")
+        } else {
+            repositoryInfoForm.classList.remove("hidden")
+        }
+    }
+
+    async function fetchStatus(owner, repo, token) {
+        return fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs`, {
+            headers: {"Authorization": `token ${token}`}
+        })
+            .then((response) => response.json())
+            .then((body) => {
+                let outcome = body["workflow_runs"][0];
+
+                return {
+                    status: outcome.status,
+                    conclusion: outcome.conclusion,
+                    message: outcome.head_commit.message,
+                    project: `${owner}/${repo}`,
+                }
+            });
+    }
+
+    function postStatus(outcome) {
+        postConclusion(outcome);
+        postMessage(outcome.message);
+        postProject(outcome.project);
+    }
+
+    function postConclusion(outcome) {
+        if (outcome.status !== "completed") {
+            document.getElementsByTagName("body")[0].className = "in-progress"
+        } else if (outcome.conclusion === "success") {
+            document.getElementsByTagName("body")[0].className = "success"
+        } else if (outcome.conclusion === "failure" || outcome.conclusion === "timed_out") {
+            document.getElementsByTagName("body")[0].className = "failure"
+        } else {
+            document.getElementsByTagName("body")[0].className = "other"
+        }
+    }
+
+    function postMessage(message) {
+        if (message) {
+            document.getElementById("message").innerHTML = message
+        } else {
+            document.getElementById("message").innerHTML = ""
+        }
+    }
+
+    function postProject(project) {
+        if (project) {
+            document.getElementById("project").innerHTML = project
+        } else {
+            document.getElementById("project").innerHTML = ""
+        }
+    }
+</script>
+</body>
+</html>
