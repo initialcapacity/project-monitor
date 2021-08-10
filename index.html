@@ -63,12 +63,18 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+
             min-height: 100vh;
+            padding: 2rem;
         }
 
         h1 {
-            font-size: 3rem;
+            max-width: 60rem;
             margin-bottom: 2rem;
+
+            font-size: 3rem;
+            line-height: 1.2;
+            text-align: center;
         }
 
         h2 {
@@ -197,12 +203,13 @@
         })
             .then((response) => response.json())
             .then((body) => {
-                let outcome = body["workflow_runs"][0];
+                let outcome = body.workflow_runs[0];
+                let message = outcome.head_commit.message.replace(/Signed-off-by:.*/, "")
 
                 return {
                     status: outcome.status,
                     conclusion: outcome.conclusion,
-                    message: outcome.head_commit.message,
+                    message: message,
                     project: `${owner}/${repo}`,
                 }
             });
