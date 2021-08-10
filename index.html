@@ -141,95 +141,127 @@
 <script>
     const repositoryInfoForm = document.getElementById("repository-info");
 
-    updateStatus()
-    setInterval(updateStatus, 10_000)
+    class Project {
+        owner;
+        repo;
+        token;
+
+        constructor(owner, repo, token) {
+            this.owner = owner;
+            this.repo = repo;
+            this.token = token;
+        }
+    }
+
+    class Outcome {
+        status;
+        conclusion;
+        message;
+        project;
+
+        constructor(status, conclusion, message, project) {
+            this.status = status;
+            this.conclusion = conclusion;
+            this.message = message;
+            this.project = project;
+        }
+    }
+
+    class ProjectRepository {
+        save(project) {
+            localStorage.setItem("owner", project.owner)
+            localStorage.setItem("repo", project.repo)
+            localStorage.setItem("token", project.token)
+        }
+
+        get() {
+            if (!!localStorage.getItem("owner") && !!localStorage.getItem("repo")) {
+                return new Project(localStorage.getItem("owner"), localStorage.getItem("repo"), localStorage.getItem("token"))
+            } else {
+                return null
+            }
+        }
+
+        clear() {
+            localStorage.clear()
+        }
+    }
+    const gateway = new ProjectRepository();
+
+    updateProjectStatus()
+    setInterval(updateProjectStatus, 10_000)
 
     repositoryInfoForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const owner = e.target.querySelector("[name=owner]").value;
         const repo = e.target.querySelector("[name=repo]").value;
         const token = e.target.querySelector("[name=github-token]").value;
+        const project = new Project(owner, repo, token)
 
-        setRepositoryInfo(owner, repo, token)
-        updateStatus()
+        gateway.save(project)
+        updateProjectStatus()
     });
 
     document.getElementById("clear-repository-info").addEventListener("click", (e) => {
         e.preventDefault();
-        clearRepositoryInfo()
-        updateStatus()
+        gateway.clear()
+        updateProjectStatus()
     });
 
-    function setRepositoryInfo(owner, repo, token) {
-        localStorage.setItem("owner", owner)
-        localStorage.setItem("repo", repo)
-        localStorage.setItem("token", token)
-    }
+    async function updateProjectStatus() {
+        const project = gateway.get()
 
-    function clearRepositoryInfo() {
-        localStorage.clear()
-    }
-
-    async function updateStatus() {
-        if (repositoryInfoExists()) {
-            const owner = localStorage.getItem("owner")
-            const repo = localStorage.getItem("repo")
-            const token = localStorage.getItem("token")
-
-            const outcome = await fetchStatus(owner, repo, token)
-            postStatus(outcome)
+        if (project != null) {
+            postOutcome(await fetchOutcome(project))
         } else {
-            postStatus({})
+            postOutcome({})
         }
 
-        toggleInfoForm()
+        toggleInfoForm(project)
     }
 
-    function repositoryInfoExists() {
-        return !!localStorage.getItem("owner") && !!localStorage.getItem("repo")
-    }
-
-    function toggleInfoForm() {
-        if (repositoryInfoExists()) {
+    function toggleInfoForm(project) {
+        if (project != null) {
             repositoryInfoForm.classList.add("hidden")
         } else {
             repositoryInfoForm.classList.remove("hidden")
         }
     }
 
-    async function fetchStatus(owner, repo, token) {
-        return fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs`, {
-            headers: {"Authorization": `token ${token}`}
+    async function fetchOutcome(project) {
+        return fetch(`https://api.github.com/repos/${project.owner}/${project.repo}/actions/runs`, {
+            headers: {"Authorization": `token ${project.token}`}
         })
             .then((response) => response.json())
             .then((body) => {
-                let outcome = body.workflow_runs[0];
-                let message = outcome.head_commit.message.replace(/Signed-off-by:.*/, "")
+                let workflow = body.workflow_runs[0];
 
-                return {
-                    status: outcome.status,
-                    conclusion: outcome.conclusion,
-                    message: message,
-                    project: `${owner}/${repo}`,
-                }
+                return new Outcome(
+                    workflow.status,
+                    workflow.conclusion,
+                    workflow.head_commit.message.replace(/Signed-off-by:.*/, ""),
+                    `${project.owner}/${project.repo}`,
+                )
             });
     }
 
-    function postStatus(outcome) {
+    function postOutcome(outcome) {
         postConclusion(outcome);
         postMessage(outcome.message);
         postProject(outcome.project);
     }
 
     function postConclusion(outcome) {
+        let body = document.getElementsByTagName("body")[0];
+
         if (outcome.status !== "completed") {
-            document.getElementsByTagName("body")[0].className = "in-progress"
+            body.className = "in-progress"
         } else if (outcome.conclusion === "success") {
-            document.getElementsByTagName("body")[0].className = "success"
+            body.className = "success"
         } else if (outcome.conclusion === "failure" || outcome.conclusion === "timed_out") {
-            document.getElementsByTagName("body")[0].className = "failure"
+            body.className = "failure"
         } else {
-            document.getElementsByTagName("body")[0].className = "other"
+            body.className = "other"
         }
     }
 
