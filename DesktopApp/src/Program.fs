@@ -19,7 +19,6 @@ type MainWindow() as this =
         base.Title <- "Project Monitor"
         base.Width <- 800.0
         base.Height <- 400.0
-        base.ExtendClientAreaToDecorationsHint <- true
         base.TransparencyLevelHint <- WindowTransparencyLevel.AcrylicBlur
         base.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.PreferSystemChrome
         base.Background <- Brush.Parse("#6000")
