@@ -5,6 +5,7 @@ open Elmish
 
 open DesktopApp.GithubApi
 open DesktopApp.RemoteData
+open FSharp.Control
 
 type Screen =
     | RepositoryForm
@@ -20,6 +21,7 @@ type Msg =
     | SaveRepository of unit
     | EditRepository of unit
     | UpdateActionRunData of RemoteData<ActionRun, ApiError>
+    | Refresh
 
 let init _ =
     { Repository = { Owner = ""; Name = ""; Token = "" }
@@ -48,3 +50,17 @@ let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     | SaveRepository () -> { model with Screen = RepositoryStatus; ActionRunData = Loading }, Cmd.OfAsync.result (fetchActionRunData model)
     | EditRepository () -> { model with Screen = RepositoryForm }, Cmd.none
     | UpdateActionRunData data -> { model with ActionRunData = data }, Cmd.none
+    | Refresh -> model, Cmd.OfAsync.result (fetchActionRunData model)
+
+let subscribe (model: Model): Cmd<Msg> =
+    let oneSecond = 1000
+    let refreshFrequency = oneSecond * 10
+
+    Cmd.ofSub (fun dispatch ->
+        async {
+            while true do
+                do! Async.Sleep(refreshFrequency)
+                dispatch Refresh
+        }
+        |> Async.Start
+    )

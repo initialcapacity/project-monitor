@@ -3,6 +3,7 @@ module DesktopApp.Program
 open Avalonia.Controls
 open Avalonia.Media
 open Avalonia.Platform
+open DesktopApp
 open Elmish
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
@@ -23,6 +24,7 @@ type MainWindow() as this =
 
         (MainUI.init, MainUI.update, MainUI.view)
         |||> Elmish.Program.mkProgram
+        |> Program.withSubscription MainUI.subscribe
         |> Program.withHost this
         |> Program.run
 
