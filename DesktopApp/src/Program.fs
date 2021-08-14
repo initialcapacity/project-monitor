@@ -1,11 +1,10 @@
 module DesktopApp.Program
 
-open Avalonia.Controls
-open Avalonia.Media
-open Avalonia.Platform
 open DesktopApp
+
 open Elmish
 open Avalonia
+open Avalonia.Controls
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.FuncUI
 open Avalonia.FuncUI.Elmish
@@ -17,11 +16,7 @@ type MainWindow() as this =
     inherit HostWindow()
     do
         base.Title <- "Project Monitor"
-        base.Width <- 800.0
-        base.Height <- 400.0
-        base.TransparencyLevelHint <- WindowTransparencyLevel.AcrylicBlur
-        base.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.PreferSystemChrome
-        base.Background <- Brush.Parse("#6000")
+        base.WindowState <- WindowState.FullScreen
 
         (MainUI.init configPath, MainUI.update, MainUI.view)
         |||> Elmish.Program.mkProgram

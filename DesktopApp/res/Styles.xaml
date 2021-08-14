@@ -3,6 +3,14 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <Style Selector="Window">
+        <Setter Property="SystemDecorations" Value="None" />
+        <Setter Property="TransparencyLevelHint" Value="AcrylicBlur" />
+        <Setter Property="WindowState" Value="Maximized" />
+        <Setter Property="Background" Value="#6000" />
+        <Setter Property="Topmost" Value="true" />
+    </Style>
+
     <Style Selector="TextBlock.title">
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -31,10 +39,25 @@
         <Style.Animations>
             <Animation Duration="0:0:1" PlaybackDirection="Alternate" IterationCount="INFINITE">
                 <KeyFrame Cue="0%">
+                    <Setter Property="Margin" Value="0.0" />
                     <Setter Property="Background" Value="#662" />
                 </KeyFrame>
                 <KeyFrame Cue="100%">
+                    <Setter Property="Margin" Value="8.0" />
                     <Setter Property="Background" Value="#bb7" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="Border.buildInProgress Grid">
+        <Style.Animations>
+            <Animation Duration="0:0:1" PlaybackDirection="Alternate" IterationCount="INFINITE">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Margin" Value="16.0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Margin" Value="8.0" />
                 </KeyFrame>
             </Animation>
         </Style.Animations>
