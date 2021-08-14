@@ -29,16 +29,6 @@ let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)
     with ex -> Error (ParseError ex)
 
-let private fetchActionRunsJson info () =
-    let headers = seq [
-        "Authorization", $"token %s{info.Token}"
-        "User-Agent", "ProjectMonitor/1.0"
-    ]
-    Http.AsyncRequestString(
-        $"https://api.github.com/repos/%s{info.Owner}/%s{info.Repo}/actions/runs",
-        [], headers
-    )
-
 let private jsonWorkflowToActionRun info (w: WorkflowsJsonProvider.WorkflowRun) =
     let status =
         match w.Status, w.Conclusion with
@@ -59,9 +49,20 @@ let private jsonToActionRun info (json: WorkflowsJsonProvider.Root) =
     |> Option.defaultValue (Error NoWorkflow)
 
 let fetchActionRuns info =
+    let headers = seq [
+        "Authorization", $"token %s{info.Token}"
+        "User-Agent", "ProjectMonitor/1.0"
+    ]
+
+    let doRequest () =
+        Http.AsyncRequestString(
+            $"https://api.github.com/repos/%s{info.Owner}/%s{info.Repo}/actions/runs",
+            [], headers
+        )
+
     async {
         let! result =
-            fetchActionRunsJson info |> Try.async ConnectionError
+            doRequest |> Try.async ConnectionError
 
         return result
         |> Result.bind tryParse
