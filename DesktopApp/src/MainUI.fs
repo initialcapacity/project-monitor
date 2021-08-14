@@ -20,7 +20,7 @@ type Model =
 
 type Msg =
     | ConfigLoaded of RemoteData<GithubRepository list, ConfigLoadError>
-    | UpdateStatus of GithubRepository * RemoteData<ActionRun, ApiError>
+    | UpdateStatus of GithubRepository * RemoteData<BuildRun, ApiError>
     | Refresh
 
 let private loadConfig path =

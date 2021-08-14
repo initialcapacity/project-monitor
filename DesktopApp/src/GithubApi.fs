@@ -8,7 +8,7 @@ type ActionStatus =
     | Failure
     | Unknown
 
-type ActionRun =
+type BuildRun =
     { Status: ActionStatus
       Message: string
       Project: string }

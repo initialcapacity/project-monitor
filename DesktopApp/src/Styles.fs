@@ -26,29 +26,5 @@ module TextBlock =
         ]
         TextBlock.create (defaults @ attrs) :> IView
 
-    let label = textBlock ["label"]
     let title = textBlock ["title"]
     let subTitle = textBlock ["subTitle"]
-
-[<RequireQualifiedAccess>]
-module TextBox =
-    let field value onTextChanged attrs: IView =
-        let defaults = [
-            TextBox.text value
-            TextBox.onTextChanged onTextChanged
-            TextBox.classes ["field"]
-        ]
-        TextBox.create (defaults @ attrs) :> IView
-
-[<RequireQualifiedAccess>]
-module Button =
-    let private button (classes: string list) (text: string) onClick attrs: IView =
-        let defaults = [
-            Button.content text
-            Button.onClick (fun _ -> onClick())
-            Button.classes classes
-        ]
-        Button.create (defaults @ attrs) :> IView
-
-    let primary = button ["primary"]
-    let back = button ["back"]
