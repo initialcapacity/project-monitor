@@ -6,6 +6,15 @@ open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 
+[<RequireQualifiedAccess>]
+module Color =
+    let transparent = "#0000"
+    let yellow = "#b884"
+    let green = "#b484"
+    let red = "#b844"
+    let grey = "#b444"
+
+[<RequireQualifiedAccess>]
 module TextBlock =
     let private textBlock (classes: string list) text attrs: IView =
         let defaults = [
@@ -18,6 +27,7 @@ module TextBlock =
     let title = textBlock ["title"]
     let subTitle = textBlock ["subTitle"]
 
+[<RequireQualifiedAccess>]
 module TextBox =
     let field value (dispatch: Dispatch<'a>) (msg: string -> 'a) attrs: IView =
         let defaults = [
@@ -27,6 +37,7 @@ module TextBox =
         ]
         TextBox.create (defaults @ attrs) :> IView
 
+[<RequireQualifiedAccess>]
 module Button =
     let private button<'a> (classes: string list) (text: string) (dispatch: Dispatch<'a>) (msg: 'a) attrs: IView =
         let defaults = [

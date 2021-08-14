@@ -96,16 +96,16 @@ let private errorView error attrs: IView =
 let private statusView model dispatch =
     let color, childView =
         match model.ActionRunData with
-        | NotLoaded -> "#0000", loadingView [ col 1; row 1 ]
-        | Loading -> "#0000", loadingView [ col 1; row 1 ]
+        | NotLoaded -> Color.transparent, loadingView [ col 1; row 1 ]
+        | Loading -> Color.transparent, loadingView [ col 1; row 1 ]
         | Loaded actionRun ->
             match actionRun.Status with
-            | InProgress -> "#a884", loadedView actionRun [ col 1; row 1 ]
-            | Success -> "#a484", loadedView actionRun [ col 1; row 1 ]
-            | Failure -> "#a844", loadedView actionRun [ col 1; row 1 ]
-            | Unknown -> "#a444", loadedView actionRun [ col 1; row 1 ]
-        | Refreshing actionRun -> "#0000", loadedView actionRun [ col 1; row 1 ]
-        | Error err -> "#0000", errorView err [ col 1; row 1 ]
+            | InProgress -> Color.yellow, loadedView actionRun [ col 1; row 1 ]
+            | Success -> Color.green, loadedView actionRun [ col 1; row 1 ]
+            | Failure -> Color.red, loadedView actionRun [ col 1; row 1 ]
+            | Unknown -> Color.grey, loadedView actionRun [ col 1; row 1 ]
+        | Refreshing actionRun -> Color.transparent, loadedView actionRun [ col 1; row 1 ]
+        | Error err -> Color.transparent, errorView err [ col 1; row 1 ]
 
     DockPanel.create [
         DockPanel.background color

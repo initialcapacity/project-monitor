@@ -19,7 +19,7 @@ type MainWindow() as this =
         base.ExtendClientAreaToDecorationsHint <- true
         base.TransparencyLevelHint <- WindowTransparencyLevel.AcrylicBlur
         base.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.PreferSystemChrome
-        base.Background <- Brush.Parse("#b333")
+        base.Background <- Brush.Parse(Color.grey)
 
         (MainUI.init, MainUI.update, MainUI.view)
         |||> Elmish.Program.mkProgram
