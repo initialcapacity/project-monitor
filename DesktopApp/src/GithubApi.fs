@@ -18,9 +18,9 @@ type ApiError =
     | ConnectionError of exn
     | NoWorkflow
 
-type GithubInfo =
+type GithubRepository =
     { Owner: string
-      Repo: string
+      Name: string
       Token: string }
 
 type WorkflowsJsonProvider = JsonProvider<"res/WorkflowRuns.json">
@@ -29,7 +29,7 @@ let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)
     with ex -> Error (ParseError ex)
 
-let private jsonWorkflowToActionRun info (w: WorkflowsJsonProvider.WorkflowRun) =
+let private jsonWorkflowToActionRun repo (w: WorkflowsJsonProvider.WorkflowRun) =
     let status =
         match w.Status, w.Conclusion with
         | "completed", Some "success" -> Success
@@ -40,23 +40,23 @@ let private jsonWorkflowToActionRun info (w: WorkflowsJsonProvider.WorkflowRun) 
 
     { Status = status
       Message = w.HeadCommit.Message
-      Project = $"%s{info.Owner}/%s{info.Repo}" }
+      Project = $"%s{repo.Owner}/%s{repo.Name}" }
 
-let private jsonToActionRun info (json: WorkflowsJsonProvider.Root) =
+let private jsonToActionRun repo (json: WorkflowsJsonProvider.Root) =
     json.WorkflowRuns
     |> Array.tryHead
-    |> Option.map ((jsonWorkflowToActionRun info) >> Ok)
+    |> Option.map ((jsonWorkflowToActionRun repo) >> Ok)
     |> Option.defaultValue (Error NoWorkflow)
 
-let fetchActionRuns info =
+let fetchActionRuns repo =
     let headers = seq [
-        "Authorization", $"token %s{info.Token}"
+        "Authorization", $"token %s{repo.Token}"
         "User-Agent", "ProjectMonitor/1.0"
     ]
 
     let doRequest () =
         Http.AsyncRequestString(
-            $"https://api.github.com/repos/%s{info.Owner}/%s{info.Repo}/actions/runs",
+            $"https://api.github.com/repos/%s{repo.Owner}/%s{repo.Name}/actions/runs",
             [], headers
         )
 
@@ -66,5 +66,5 @@ let fetchActionRuns info =
 
         return result
         |> Result.bind tryParse
-        |> Result.bind (jsonToActionRun info)
+        |> Result.bind (jsonToActionRun repo)
     }
