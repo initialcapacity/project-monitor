@@ -17,7 +17,7 @@ type Model =
       ActionRunData: RemoteData<ActionRun, ApiError> }
 
 type Msg =
-    | RepositoryChanged of GithubRepository
+    | RepositoryChanged of (GithubRepository -> GithubRepository)
     | SaveRepository of unit
     | EditRepository of unit
     | UpdateActionRunData of RemoteData<ActionRun, ApiError>
@@ -46,7 +46,7 @@ let private fetchActionRunData model =
 
 let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     match msg with
-    | RepositoryChanged value -> { model with Repository = value }, Cmd.none
+    | RepositoryChanged func -> { model with Repository = func model.Repository }, Cmd.none
     | SaveRepository () -> { model with Screen = RepositoryStatus; ActionRunData = Loading }, Cmd.OfAsync.result (fetchActionRunData model)
     | EditRepository () -> { model with Screen = RepositoryForm }, Cmd.none
     | UpdateActionRunData data -> { model with ActionRunData = data }, Cmd.none

@@ -10,7 +10,7 @@ open DesktopApp.GithubApi
 open DesktopApp.RemoteData
 
 type Dispatch =
-    { OnRepositoryChanged: GithubRepository -> unit
+    { OnRepositoryChanged: (GithubRepository -> GithubRepository) -> unit
       OnRepositorySaved: unit -> unit
       OnEdit: unit -> unit }
 
@@ -20,13 +20,13 @@ let form (repository: GithubRepository) dispatch =
     let buttonHeight = 48
 
     let onOwnerChanged text =
-        dispatch.OnRepositoryChanged { repository with Owner = text }
+        dispatch.OnRepositoryChanged (fun r -> { r with Owner = text })
 
     let onNameChanged text =
-        dispatch.OnRepositoryChanged { repository with Name = text }
+        dispatch.OnRepositoryChanged (fun r -> { r with Name = text })
 
     let onTokenChanged text =
-        dispatch.OnRepositoryChanged { repository with Token = text }
+        dispatch.OnRepositoryChanged (fun r -> { r with Token = text })
 
     Grid.create [
         Grid.columnDefinitions "*, 400, *"
