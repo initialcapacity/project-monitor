@@ -7,12 +7,16 @@ open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 
 module TextBlock =
-    let label text attrs: IView =
+    let private textBlock (classes: string list) text attrs: IView =
         let defaults = [
             TextBlock.text text
-            TextBlock.classes ["label"]
+            TextBlock.classes classes
         ]
         TextBlock.create (defaults @ attrs) :> IView
+
+    let label = textBlock ["label"]
+    let title = textBlock ["title"]
+    let subTitle = textBlock ["subTitle"]
 
 module TextBox =
     let field value (dispatch: Dispatch<'a>) (msg: string -> 'a) attrs: IView =
@@ -24,7 +28,7 @@ module TextBox =
         TextBox.create (defaults @ attrs) :> IView
 
 module Button =
-    let private button (classes: string list) (text: string) (dispatch: Dispatch<'a>) (msg: 'a) attrs: IView =
+    let private button<'a> (classes: string list) (text: string) (dispatch: Dispatch<'a>) (msg: 'a) attrs: IView =
         let defaults = [
             Button.content text
             Button.onClick (fun _ -> dispatch msg)
@@ -32,8 +36,5 @@ module Button =
         ]
         Button.create (defaults @ attrs) :> IView
 
-    let primary (text: string) (dispatch: Dispatch<'a>) (msg: 'a) attrs: IView =
-        button ["primary"] text dispatch msg attrs
-
-    let back (text: string) (dispatch: Dispatch<'a>) (msg: 'a) attrs: IView =
-        button ["back"] text dispatch msg attrs
+    let primary<'a> = button<'a> ["primary"]
+    let back<'a> = button<'a> ["back"]

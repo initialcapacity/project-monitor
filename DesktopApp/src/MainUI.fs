@@ -1,10 +1,13 @@
 ﻿module DesktopApp.MainUI
 
-open DesktopApp.GithubApi
-open DesktopApp.RemoteData
 open Elmish
+open Avalonia.Layout
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.FuncUI.Types
+
+open DesktopApp.GithubApi
+open DesktopApp.RemoteData
 
 type Screen =
     | RepoForm
@@ -55,30 +58,67 @@ let private formView model dispatch =
         ]
     ]
 
-let private statusView model dispatch =
-    let padding = 80
-    let status =
-        match model.ActionRunData with
-        | NotLoaded -> ""
-        | Loading -> "Loading"
-        | Loaded status -> $"%A{status}"
-        | Refreshing status -> $"%A{status}"
-        | Error x -> $"Error %A{x}"
+let private loadingView attrs: IView =
+    TextBlock.subTitle "Loading..." attrs
 
-    Grid.create [
-        Grid.rowDefinitions $"{padding}, *, {padding}"
-        Grid.columnDefinitions $"{padding}, *, {padding}"
+let private loadedView actionRun attrs =
+    let message =
+        actionRun.Message.Split("\n")
+        |> Array.tryHead
+        |> Option.defaultValue "-"
 
+    let viewAttrs = [
+        Grid.rowDefinitions "*,*"
+        Grid.columnDefinitions "*"
         Grid.children [
-            Button.back "Back" dispatch BackToForm [ Grid.column 0; Grid.row 0 ]
-            TextBlock.label status [ Grid.column 1; Grid.row 1 ]
+            TextBlock.title message [
+                Grid.row 0
+                TextBlock.verticalAlignment VerticalAlignment.Bottom
+            ]
+            TextBlock.subTitle actionRun.Project [
+                Grid.row 1
+                TextBlock.verticalAlignment VerticalAlignment.Top
+            ]
+        ]
+    ]
+
+    Grid.create (viewAttrs @ attrs) :> IView
+
+let private errorView error attrs: IView =
+    let message =
+        match error with
+        | ParseError _ -> "JSON Parse Error"
+        | ConnectionError _ -> "Connection Error"
+        | NoWorkflow -> "No Workflow Available"
+
+    TextBlock.label message attrs
+
+let private statusView model dispatch =
+    let color, childView =
+        match model.ActionRunData with
+        | NotLoaded -> "#0000", loadingView [ col 1; row 1 ]
+        | Loading -> "#0000", loadingView [ col 1; row 1 ]
+        | Loaded actionRun ->
+            match actionRun.Status with
+            | InProgress -> "#a884", loadedView actionRun [ col 1; row 1 ]
+            | Success -> "#a484", loadedView actionRun [ col 1; row 1 ]
+            | Failure -> "#a844", loadedView actionRun [ col 1; row 1 ]
+            | Unknown -> "#a444", loadedView actionRun [ col 1; row 1 ]
+        | Refreshing actionRun -> "#0000", loadedView actionRun [ col 1; row 1 ]
+        | Error err -> "#0000", errorView err [ col 1; row 1 ]
+
+    DockPanel.create [
+        DockPanel.background color
+        DockPanel.children [
+            Button.back "Back" dispatch BackToForm [ DockPanel.dock Dock.Top ]
+            childView
         ]
     ]
 
 let view (model: Model) (dispatch: Dispatch<Msg>) =
     match model.Screen with
-    | RepoForm -> formView model dispatch
-    | RepoStatus -> statusView model dispatch
+    | RepoForm -> formView model dispatch :> IView
+    | RepoStatus -> statusView model dispatch :> IView
 
 let private fetchActionRunData model =
     async {

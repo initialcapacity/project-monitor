@@ -4,13 +4,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style Selector="TextBlock.label">
-        <Setter Property="TextAlignment" Value="Left"/>
-        <Setter Property="VerticalAlignment" Value="Bottom"/>
-        <Setter Property="FontSize" Value="17.0"/>
+        <Setter Property="TextAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="FontSize" Value="17.0" />
+    </Style>
+
+    <Style Selector="TextBlock.title">
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="32.0" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.subTitle">
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="24.0" />
     </Style>
 
     <Style Selector="Button TextBlock">
-        <Setter Property="FontSize" Value="17.0"/>
+        <Setter Property="FontSize" Value="17.0" />
     </Style>
 
     <Style Selector="Button.primary">
@@ -22,6 +36,6 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Background" Value="#0000" />
-        <Setter Property="Margin" Value="8" />
+        <Setter Property="Margin" Value="16" />
     </Style>
 </Styles>
