@@ -39,7 +39,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          name: linux-build
+          name: windows-build
           path: DesktopApp/bin/Release/net5.0/win10-x64/publish
 
   linux:
@@ -83,5 +83,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          name: linux-build
+          name: macos-build
           path: DesktopApp/bin/Release/net5.0/osx-x64/publish
