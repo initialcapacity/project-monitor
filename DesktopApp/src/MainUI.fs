@@ -2,14 +2,17 @@
 
 open Elmish
 open FSharp.Control
+open Avalonia.FuncUI.DSL
 
 open DesktopApp.Config
 open DesktopApp.GithubApi
 open DesktopApp.RemoteData
+open DesktopApp.StatusView
+open DesktopApp.Layout
 
 type RepositoryStatus =
     { Repository: GithubRepository
-      Status: RemoteData<ActionRun, ApiError> }
+      Status: BuildStatus }
 
 type Model =
     { ConfigPath: string
@@ -37,18 +40,10 @@ let private loadingView path =
 let private errorView _ =
     TextBlock.subTitle "Failed to load config" []
 
-let private tooManyReposView =
-    TextBlock.subTitle "Too many repos, max is 1." []
-
-let private loadedView repoStatuses =
-    match repoStatuses with
-    | [repoStatus] -> RepositoryView.status repoStatus.Status
-    | _ -> tooManyReposView
-
 let view (model: Model) (_: Dispatch<Msg>) =
     match model.RepositoryStatuses with
     | NotLoaded | Loading -> loadingView model.ConfigPath
-    | Loaded repoStatuses | Refreshing repoStatuses -> loadedView repoStatuses
+    | Loaded repoStatuses | Refreshing repoStatuses -> Layout.create (repoStatuses |> List.map (fun r -> r.Status))
     | Error err -> errorView err
 
 let private refreshData model dispatch =
@@ -91,7 +86,7 @@ let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
         { model with RepositoryStatuses = newStatuses }, Cmd.none
     | Refresh -> model, Cmd.ofSub (refreshData model)
 
-let subscribe (model: Model): Cmd<Msg> =
+let subscribe (_: Model): Cmd<Msg> =
     let oneSecond = 1000
     let refreshFrequency = oneSecond * 10
 

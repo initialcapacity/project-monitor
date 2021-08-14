@@ -17,7 +17,8 @@
     <Compile Include="src\GithubApi.fs" />
     <Compile Include="src\Config.fs" />
     <Compile Include="src\Styles.fs" />
-    <Compile Include="src\RepositoryView.fs" />
+    <Compile Include="src\StatusView.fs" />
+    <Compile Include="src\Layout.fs" />
     <Compile Include="src\MainUI.fs" />
     <Compile Include="src\Program.fs" />
     
