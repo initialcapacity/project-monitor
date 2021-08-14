@@ -11,6 +11,8 @@ open Avalonia.FuncUI
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Components.Hosts
 
+let mutable private configPath: string = "./config.json"
+
 type MainWindow() as this =
     inherit HostWindow()
     do
@@ -22,7 +24,7 @@ type MainWindow() as this =
         base.ExtendClientAreaChromeHints <- ExtendClientAreaChromeHints.PreferSystemChrome
         base.Background <- Brush.Parse(Color.grey)
 
-        (MainUI.init, MainUI.update, MainUI.view)
+        (MainUI.init configPath, MainUI.update, MainUI.view)
         |||> Elmish.Program.mkProgram
         |> Program.withSubscription MainUI.subscribe
         |> Program.withHost this
@@ -41,10 +43,21 @@ type App() =
             desktopLifetime.MainWindow <- MainWindow()
         | _ -> ()
 
-[<EntryPoint>]
-let main args =
+let private startApp path =
+    configPath <- path
+
     AppBuilder
         .Configure<App>()
         .UsePlatformDetect()
         .UseSkia()
-        .StartWithClassicDesktopLifetime(args)
+        .StartWithClassicDesktopLifetime([||])
+
+let private argumentsError () =
+    eprintfn "Usage error, please launch with path to config file as argument"
+    1
+
+[<EntryPoint>]
+let main args =
+    match args with
+    | [| path |] -> startApp path
+    | _ -> argumentsError ()

@@ -15,12 +15,13 @@
     <Compile Include="src\Prelude.fs" />
     <Compile Include="src\RemoteData.fs" />
     <Compile Include="src\GithubApi.fs" />
+    <Compile Include="src\Config.fs" />
     <Compile Include="src\Styles.fs" />
     <Compile Include="src\RepositoryView.fs" />
     <Compile Include="src\MainUI.fs" />
     <Compile Include="src\Program.fs" />
     
-    <None Include="res\WorkflowRuns.json" />
+    <None Include="res\*.json" />
 
     <AvaloniaResource Include="res\*.xaml" />
   </ItemGroup>

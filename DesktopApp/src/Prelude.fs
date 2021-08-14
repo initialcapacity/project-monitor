@@ -1,6 +1,8 @@
 ﻿[<AutoOpen>]
 module DesktopApp.Prelude
 
+let curry f a b = f (a, b)
+
 [<RequireQualifiedAccess>]
 module Result =
 
@@ -17,4 +19,21 @@ module Try =
                 let! value = f ()
                 return Ok value
             with ex -> return Error (wrapper ex)
+        }
+
+[<RequireQualifiedAccess>]
+module AsyncResult =
+
+    let map f asyncRes =
+        async {
+            match! asyncRes with
+            | Ok x -> return Ok (f x)
+            | Error x -> return Error x
+        }
+
+    let bind f asyncRes =
+        async {
+            match! asyncRes with
+            | Ok x -> return! f x
+            | Error x -> return Error x
         }

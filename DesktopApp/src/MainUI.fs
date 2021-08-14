@@ -1,56 +1,95 @@
 ﻿module DesktopApp.MainUI
 
-open DesktopApp
 open Elmish
-
-open DesktopApp.GithubApi
-open DesktopApp.RemoteData
 open FSharp.Control
 
-type Screen =
-    | RepositoryForm
-    | RepositoryStatus
+open DesktopApp.Config
+open DesktopApp.GithubApi
+open DesktopApp.RemoteData
+
+type RepositoryStatus =
+    { Repository: GithubRepository
+      Status: RemoteData<ActionRun, ApiError> }
 
 type Model =
-    { Repository: GithubRepository
-      Screen: Screen
-      ActionRunData: RemoteData<ActionRun, ApiError> }
+    { ConfigPath: string
+      RepositoryStatuses: RemoteData<RepositoryStatus list, ConfigLoadError> }
 
 type Msg =
-    | RepositoryChanged of (GithubRepository -> GithubRepository)
-    | SaveRepository of unit
-    | EditRepository of unit
-    | UpdateActionRunData of RemoteData<ActionRun, ApiError>
+    | ConfigLoaded of RemoteData<GithubRepository list, ConfigLoadError>
+    | UpdateStatus of GithubRepository * RemoteData<ActionRun, ApiError>
     | Refresh
 
-let init _ =
-    { Repository = { Owner = ""; Name = ""; Token = "" }
-      Screen = RepositoryForm
-      ActionRunData = NotLoaded }, Cmd.none
-
-let view (model: Model) (dispatch: Dispatch<Msg>) =
-    let repoDispatch: RepositoryView.Dispatch =
-        { OnRepositoryChanged = RepositoryChanged >> dispatch
-          OnRepositorySaved = SaveRepository >> dispatch
-          OnEdit = EditRepository >> dispatch }
-
-    match model.Screen with
-    | RepositoryForm -> RepositoryView.form model.Repository repoDispatch
-    | RepositoryStatus -> RepositoryView.status model.ActionRunData repoDispatch
-
-let private fetchActionRunData model =
+let private loadConfig path =
     async {
-        let! result = fetchActionRuns model.Repository
-        return result |> RemoteData.ofResult |> UpdateActionRunData
+        let! result = Config.tryLoad path
+        let data = RemoteData.ofResult result
+        return ConfigLoaded data
     }
+
+let init configPath _ =
+    { ConfigPath = configPath; RepositoryStatuses = NotLoaded },
+    Cmd.OfAsync.result (loadConfig configPath)
+
+let private loadingView path =
+    TextBlock.subTitle $"Loading config at {path}" []
+
+let private errorView _ =
+    TextBlock.subTitle "Failed to load config" []
+
+let private tooManyReposView =
+    TextBlock.subTitle "Too many repos, max is 1." []
+
+let private loadedView repoStatuses =
+    match repoStatuses with
+    | [repoStatus] -> RepositoryView.status repoStatus.Status
+    | _ -> tooManyReposView
+
+let view (model: Model) (_: Dispatch<Msg>) =
+    match model.RepositoryStatuses with
+    | NotLoaded | Loading -> loadingView model.ConfigPath
+    | Loaded repoStatuses | Refreshing repoStatuses -> loadedView repoStatuses
+    | Error err -> errorView err
+
+let private refreshData model dispatch =
+    async {
+        let repoStatuses =
+            model.RepositoryStatuses
+            |> RemoteData.defaultValue []
+
+        for repoStatus in repoStatuses do
+            let repo = repoStatus.Repository
+            let! result = fetchActionRuns repo
+
+            let msg =
+                result
+                |> RemoteData.ofResult
+                |> curry UpdateStatus repoStatus.Repository
+
+            dispatch msg
+    }
+    |> Async.Start
+
+let private updateRepoStatus repo status allRepoStatuses =
+    allRepoStatuses
+    |> List.map (fun repoStatus ->
+        if repoStatus.Repository = repo
+            then { repoStatus with Status = status }
+            else repoStatus
+    )
+
+let private repositoriesToStatuses =
+    List.map (fun r -> { Repository = r; Status = NotLoaded })
 
 let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     match msg with
-    | RepositoryChanged func -> { model with Repository = func model.Repository }, Cmd.none
-    | SaveRepository () -> { model with Screen = RepositoryStatus; ActionRunData = Loading }, Cmd.OfAsync.result (fetchActionRunData model)
-    | EditRepository () -> { model with Screen = RepositoryForm }, Cmd.none
-    | UpdateActionRunData data -> { model with ActionRunData = data }, Cmd.none
-    | Refresh -> model, Cmd.OfAsync.result (fetchActionRunData model)
+    | ConfigLoaded data ->
+        let newStatuses = data |> RemoteData.map repositoriesToStatuses
+        { model with RepositoryStatuses = newStatuses }, Cmd.ofMsg Refresh
+    | UpdateStatus (repo, status) ->
+        let newStatuses = model.RepositoryStatuses |> RemoteData.map (updateRepoStatus repo status)
+        { model with RepositoryStatuses = newStatuses }, Cmd.none
+    | Refresh -> model, Cmd.ofSub (refreshData model)
 
 let subscribe (model: Model): Cmd<Msg> =
     let oneSecond = 1000

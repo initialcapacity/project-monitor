@@ -1,0 +1,14 @@
+﻿{
+  "repositories": [
+    {
+      "owner": "dam5s",
+      "name": "somanyfeeds.fs",
+      "token": "123abc"
+    },
+    {
+      "owner": "dam5s",
+      "name": "project-monitor",
+      "token": "456def"
+    }
+  ]
+}
