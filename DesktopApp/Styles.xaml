@@ -1,0 +1,27 @@
+﻿<!-- ReSharper disable Xaml.ConstructorWarning -->
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="TextAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="FontSize" Value="17.0"/>
+    </Style>
+
+    <Style Selector="Button TextBlock">
+        <Setter Property="FontSize" Value="17.0"/>
+    </Style>
+
+    <Style Selector="Button.primary">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+
+    <Style Selector="Button.back">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Background" Value="#0000" />
+        <Setter Property="Margin" Value="8" />
+    </Style>
+</Styles>
