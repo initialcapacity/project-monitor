@@ -22,6 +22,7 @@ let private loadedView actionRun attrs =
     let viewAttrs = [
         Grid.rowDefinitions "*,*"
         Grid.columnDefinitions "*"
+        Grid.margin 16.0
         Grid.children [
             TextBlock.title message [
                 Grid.row 0
@@ -60,9 +61,12 @@ module StatusView =
             | Refreshing actionRun -> Color.transparent, loadedView actionRun [ col 1; row 1 ]
             | Error err -> Color.transparent, errorView err [ col 1; row 1 ]
 
-        let defaultAttrs = [
-            DockPanel.background color
-            DockPanel.children [ childView ]
-        ]
 
-        DockPanel.create (defaultAttrs @ attrs)  :> IView
+        let defaultAttrs = [
+            Border.borderThickness 16.0
+            Border.cornerRadius 16.0
+            Border.borderBrush Color.transparent
+            Border.background color
+            Border.child childView
+        ]
+        Border.create (defaultAttrs @ attrs) :> IView

@@ -57,9 +57,15 @@ module Layout =
         ] :> IView
 
     let create (statuses: BuildStatus list) =
-        match statuses with
-        | [s1] -> one s1
-        | [s1; s2] -> two s1 s2
-        | [s1; s2; s3] -> three s1 s2 s3
-        | [s1; s2; s3; s4] -> four s1 s2 s3 s4
-        | _ -> tooManyReposView
+        let view =
+            match statuses with
+            | [s1] -> one s1
+            | [s1; s2] -> two s1 s2
+            | [s1; s2; s3] -> three s1 s2 s3
+            | [s1; s2; s3; s4] -> four s1 s2 s3 s4
+            | _ -> tooManyReposView
+
+        DockPanel.create [
+            DockPanel.margin 16.0
+            DockPanel.children [ view ]
+        ] :> IView

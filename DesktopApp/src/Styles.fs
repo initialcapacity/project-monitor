@@ -1,7 +1,6 @@
 ﻿[<AutoOpen>]
 module DesktopApp.Styles
 
-open Elmish
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
@@ -12,10 +11,11 @@ let inline row v = Grid.row v
 [<RequireQualifiedAccess>]
 module Color =
     let transparent = "#0000"
-    let yellow = "#b884"
-    let green = "#b484"
-    let red = "#b844"
-    let grey = "#b444"
+    let yellow = "#884"
+    let green = "#484"
+    let red = "#844"
+    let grey = "#444"
+    let black = "#000"
 
 [<RequireQualifiedAccess>]
 module TextBlock =
