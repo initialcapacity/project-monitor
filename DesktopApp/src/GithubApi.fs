@@ -23,19 +23,7 @@ type GithubInfo =
       Repo: string
       Token: string }
 
-[<Literal>]
-let private jsonSample = """
-    {"workflow_runs": [
-        {"status": "queued", "conclusion": null, "head_commit": {
-            "message": "Initial commit"
-        }},
-        {"status": "queued", "conclusion": "completed", "head_commit": {
-            "message": "Initial commit"
-        }}
-    ]}
-"""
-
-type WorkflowsJsonProvider = JsonProvider<jsonSample>
+type WorkflowsJsonProvider = JsonProvider<"res/WorkflowRuns.json">
 
 let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)

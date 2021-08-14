@@ -31,7 +31,7 @@ type App() =
 
     override this.Initialize() =
         this.Styles.Load "avares://Avalonia.Themes.Fluent/FluentDark.xaml"
-        this.Styles.Load "avares://DesktopApp/Styles.xaml"
+        this.Styles.Load "avares://DesktopApp/res/Styles.xaml"
 
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with

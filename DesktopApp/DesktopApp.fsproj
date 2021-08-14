@@ -18,10 +18,10 @@
     <Compile Include="src\Styles.fs" />
     <Compile Include="src\MainUI.fs" />
     <Compile Include="src\Program.fs" />
-  </ItemGroup>
+    
+    <None Include="res\WorkflowRuns.json" />
 
-  <ItemGroup>
-    <AvaloniaResource Include="**/*.xaml" />
+    <AvaloniaResource Include="res\*.xaml" />
   </ItemGroup>
 
   <ItemGroup>
