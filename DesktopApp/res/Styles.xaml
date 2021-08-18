@@ -40,11 +40,11 @@
             <Animation Duration="0:0:1" PlaybackDirection="Alternate" IterationCount="INFINITE">
                 <KeyFrame Cue="0%">
                     <Setter Property="Margin" Value="0.0" />
-                    <Setter Property="Background" Value="#662" />
+                    <Setter Property="Background" Value="#226" />
                 </KeyFrame>
                 <KeyFrame Cue="100%">
                     <Setter Property="Margin" Value="8.0" />
-                    <Setter Property="Background" Value="#bb7" />
+                    <Setter Property="Background" Value="#77b" />
                 </KeyFrame>
             </Animation>
         </Style.Animations>
