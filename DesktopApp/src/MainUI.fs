@@ -54,7 +54,7 @@ let private refreshData model dispatch =
 
         for repoStatus in repoStatuses do
             let repo = repoStatus.Repository
-            let! result = fetchActionRuns repo
+            let! result = fetchActionRuns "https://api.github.com" repo
 
             let msg =
                 result

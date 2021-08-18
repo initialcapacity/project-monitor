@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <RootNamespace>DesktopApp.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src\Support\ApiTesting.fs" />
+    <Compile Include="src\GithubApiTests.fs" />
+    <Compile Include="src\Main.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DesktopApp\DesktopApp.fsproj" />
+
+    <PackageReference Update="FSharp.Core" Version="5.*" />
+    <PackageReference Include="Expecto" Version="9.*" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
+    <PackageReference Include="Suave" Version="2.6.1" />
+  </ItemGroup>
+</Project>

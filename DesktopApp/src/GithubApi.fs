@@ -23,7 +23,7 @@ type GithubRepository =
       Name: string
       Token: string }
 
-type WorkflowsJsonProvider = JsonProvider<"res/WorkflowRuns.json">
+type WorkflowsJsonProvider = JsonProvider<"../DesktopApp/res/WorkflowRuns.json">
 
 let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)
@@ -48,7 +48,7 @@ let private jsonToActionRun repo (json: WorkflowsJsonProvider.Root) =
     |> Option.map ((jsonWorkflowToActionRun repo) >> Ok)
     |> Option.defaultValue (Error NoWorkflow)
 
-let fetchActionRuns repo =
+let fetchActionRuns baseUrl repo =
     let headers = seq [
         "Authorization", $"token %s{repo.Token}"
         "User-Agent", "ProjectMonitor/1.0"
@@ -56,7 +56,7 @@ let fetchActionRuns repo =
 
     let doRequest () =
         Http.AsyncRequestString(
-            $"https://api.github.com/repos/%s{repo.Owner}/%s{repo.Name}/actions/runs",
+            $"%s{baseUrl}/repos/%s{repo.Owner}/%s{repo.Name}/actions/runs",
             [], headers
         )
 
