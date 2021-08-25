@@ -9,6 +9,7 @@ let validResponse = """
 {
   "workflow_runs": [
     {
+      "name": "Publish",
       "status": "queued",
       "conclusion": null,
       "head_commit": {
@@ -16,8 +17,17 @@ let validResponse = """
       }
     },
     {
+      "name": "Build",
       "status": "queued",
-      "conclusion": "completed",
+      "conclusion": null,
+      "head_commit": {
+        "message": "Second commit"
+      }
+    },
+    {
+      "name": "Build",
+      "status": "completed",
+      "conclusion": "success",
       "head_commit": {
         "message": "Initial commit"
       }
@@ -37,14 +47,16 @@ let tests =
                     "http://localhost:8080"
                     { Owner = "dam5s"
                       Repo = "foobar"
-                      Token = "the-secret-token-0023" }
+                      Token = "the-secret-token-0023"
+                      Workflow = "Build" }
 
             let result = Async.RunSynchronously asyncResult
 
             let expectedBuild =
                 { Status = InProgress
-                  Message = "Initial commit"
-                  Project = "dam5s/foobar" }
+                  Message = "Second commit"
+                  Project = "dam5s/foobar"
+                  Workflow = "Build" }
 
             let expectedRequest =
                 { Method = HttpMethod.GET
