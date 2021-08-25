@@ -1,6 +1,7 @@
 ﻿{
   "workflow_runs": [
     {
+      "name": "Build",
       "status": "queued",
       "conclusion": null,
       "head_commit": {
@@ -8,6 +9,7 @@
       }
     },
     {
+      "name": "Deploy",
       "status": "queued",
       "conclusion": "completed",
       "head_commit": {

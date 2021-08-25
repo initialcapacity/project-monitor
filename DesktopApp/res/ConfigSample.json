@@ -1,13 +1,15 @@
 ﻿{
-  "repositories": [
+  "workflows": [
     {
       "owner": "dam5s",
-      "name": "somanyfeeds.fs",
+      "repository": "somanyfeeds.fs",
+      "workflow": "Build",
       "token": "123abc"
     },
     {
       "owner": "dam5s",
-      "name": "project-monitor",
+      "repository": "project-monitor",
+      "workflow": "Deploy",
       "token": "456def"
     }
   ]

@@ -36,7 +36,7 @@ let tests =
                 fetchActionRuns
                     "http://localhost:8080"
                     { Owner = "dam5s"
-                      Name = "foobar"
+                      Repo = "foobar"
                       Token = "the-secret-token-0023" }
 
             let result = Async.RunSynchronously asyncResult

@@ -19,10 +19,10 @@ module Config =
     let private tryParse json =
         Try.async ParseError (fun () -> async { return ConfigProvider.Parse(json) })
 
-    let private createRepositories (root: ConfigProvider.Root): GithubRepository list =
-        root.Repositories
+    let private createRepositories (root: ConfigProvider.Root): GithubRepoWorkflow list =
+        root.Workflows
         |> Array.toList
-        |> List.map (fun r -> { Owner = r.Owner; Name = r.Name; Token = r.Token })
+        |> List.map (fun r -> { Owner = r.Owner; Repo = r.Repository; Workflow = r.Workflow; Token = r.Token })
 
     let tryLoad path =
         path

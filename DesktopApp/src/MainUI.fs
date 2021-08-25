@@ -11,7 +11,7 @@ open DesktopApp.StatusView
 open DesktopApp.Layout
 
 type RepositoryStatus =
-    { Repository: GithubRepository
+    { Repository: GithubRepoWorkflow
       Status: BuildStatus }
 
 type Model =
@@ -19,8 +19,8 @@ type Model =
       RepositoryStatuses: RemoteData<RepositoryStatus list, ConfigLoadError> }
 
 type Msg =
-    | ConfigLoaded of RemoteData<GithubRepository list, ConfigLoadError>
-    | UpdateStatus of GithubRepository * RemoteData<BuildRun, ApiError>
+    | ConfigLoaded of RemoteData<GithubRepoWorkflow list, ConfigLoadError>
+    | UpdateStatus of GithubRepoWorkflow * RemoteData<BuildRun, ApiError>
     | Refresh
 
 let private loadConfig path =

@@ -11,16 +11,18 @@ type ActionStatus =
 type BuildRun =
     { Status: ActionStatus
       Message: string
-      Project: string }
+      Project: string
+      Workflow: string }
 
 type ApiError =
     | ParseError of exn
     | ConnectionError of exn
     | NoWorkflow
 
-type GithubRepository =
+type GithubRepoWorkflow =
     { Owner: string
-      Name: string
+      Repo: string
+      Workflow: string
       Token: string }
 
 type WorkflowsJsonProvider = JsonProvider<"../DesktopApp/res/WorkflowRuns.json">
@@ -29,7 +31,7 @@ let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)
     with ex -> Error (ParseError ex)
 
-let private jsonWorkflowToActionRun repo (w: WorkflowsJsonProvider.WorkflowRun) =
+let private jsonWorkflowToActionRun workflow (w: WorkflowsJsonProvider.WorkflowRun) =
     let status =
         match w.Status, w.Conclusion with
         | "completed", Some "success" -> Success
@@ -40,23 +42,26 @@ let private jsonWorkflowToActionRun repo (w: WorkflowsJsonProvider.WorkflowRun) 
 
     { Status = status
       Message = w.HeadCommit.Message
-      Project = $"%s{repo.Owner}/%s{repo.Name}" }
+      Project = $"%s{workflow.Owner}/%s{workflow.Repo}"
+      Workflow = workflow.Workflow }
 
-let private jsonToActionRun repo (json: WorkflowsJsonProvider.Root) =
+let private jsonToActionRun (workflow: GithubRepoWorkflow) (json: WorkflowsJsonProvider.Root) =
     json.WorkflowRuns
-    |> Array.tryHead
-    |> Option.map ((jsonWorkflowToActionRun repo) >> Ok)
+    |> Array.toSeq
+    |> Seq.filter (fun run -> run.Name = workflow.Workflow)
+    |> Seq.tryHead
+    |> Option.map ((jsonWorkflowToActionRun workflow) >> Ok)
     |> Option.defaultValue (Error NoWorkflow)
 
-let fetchActionRuns baseUrl repo =
+let fetchActionRuns baseUrl workflow =
     let headers = seq [
-        "Authorization", $"token %s{repo.Token}"
+        "Authorization", $"token %s{workflow.Token}"
         "User-Agent", "ProjectMonitor/1.0"
     ]
 
     let doRequest () =
         Http.AsyncRequestString(
-            $"%s{baseUrl}/repos/%s{repo.Owner}/%s{repo.Name}/actions/runs",
+            $"%s{baseUrl}/repos/%s{workflow.Owner}/%s{workflow.Repo}/actions/runs",
             [], headers
         )
 
@@ -66,5 +71,5 @@ let fetchActionRuns baseUrl repo =
 
         return result
         |> Result.bind tryParse
-        |> Result.bind (jsonToActionRun repo)
+        |> Result.bind (jsonToActionRun workflow)
     }

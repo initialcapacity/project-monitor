@@ -20,16 +20,19 @@ let private loadedView buildRun attrs =
         |> Option.defaultValue "-"
 
     let viewAttrs = [
-        Grid.rowDefinitions "*,*"
+        Grid.rowDefinitions "*,*,*"
         Grid.columnDefinitions "*"
         Grid.margin 16.0
         Grid.children [
-            TextBlock.title message [
+            TextBlock.title buildRun.Project [
                 Grid.row 0
                 TextBlock.verticalAlignment VerticalAlignment.Bottom
             ]
-            TextBlock.subTitle buildRun.Project [
+            TextBlock.title buildRun.Workflow [
                 Grid.row 1
+            ]
+            TextBlock.subTitle message [
+                Grid.row 2
                 TextBlock.verticalAlignment VerticalAlignment.Top
             ]
         ]
