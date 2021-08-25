@@ -10,9 +10,7 @@ type ActionStatus =
 
 type BuildRun =
     { Status: ActionStatus
-      Message: string
-      Project: string
-      Workflow: string }
+      Message: string }
 
 type ApiError =
     | ParseError of exn
@@ -31,7 +29,7 @@ let private tryParse json =
     try Ok (WorkflowsJsonProvider.Parse json)
     with ex -> Error (ParseError ex)
 
-let private jsonWorkflowToActionRun workflow (w: WorkflowsJsonProvider.WorkflowRun) =
+let private jsonWorkflowToActionRun (w: WorkflowsJsonProvider.WorkflowRun) =
     let status =
         match w.Status, w.Conclusion with
         | "completed", Some "success" -> Success
@@ -41,16 +39,14 @@ let private jsonWorkflowToActionRun workflow (w: WorkflowsJsonProvider.WorkflowR
         | _, _ -> InProgress
 
     { Status = status
-      Message = w.HeadCommit.Message
-      Project = $"%s{workflow.Owner}/%s{workflow.Repo}"
-      Workflow = workflow.Workflow }
+      Message = w.HeadCommit.Message }
 
 let private jsonToActionRun (workflow: GithubRepoWorkflow) (json: WorkflowsJsonProvider.Root) =
     json.WorkflowRuns
     |> Array.toSeq
     |> Seq.filter (fun run -> run.Name = workflow.Workflow)
     |> Seq.tryHead
-    |> Option.map ((jsonWorkflowToActionRun workflow) >> Ok)
+    |> Option.map (jsonWorkflowToActionRun >> Ok)
     |> Option.defaultValue (Error NoWorkflow)
 
 let fetchActionRuns baseUrl workflow =

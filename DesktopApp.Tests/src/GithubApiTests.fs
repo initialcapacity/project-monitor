@@ -54,9 +54,7 @@ let tests =
 
             let expectedBuild =
                 { Status = InProgress
-                  Message = "Second commit"
-                  Project = "dam5s/foobar"
-                  Workflow = "Build" }
+                  Message = "Second commit" }
 
             let expectedRequest =
                 { Method = HttpMethod.GET

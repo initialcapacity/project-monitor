@@ -10,10 +10,6 @@ open DesktopApp.RemoteData
 open DesktopApp.StatusView
 open DesktopApp.Layout
 
-type RepositoryStatus =
-    { Repository: GithubRepoWorkflow
-      Status: BuildStatus }
-
 type Model =
     { ConfigPath: string
       RepositoryStatuses: RemoteData<RepositoryStatus list, ConfigLoadError> }
@@ -43,7 +39,7 @@ let private errorView _ =
 let view (model: Model) (_: Dispatch<Msg>) =
     match model.RepositoryStatuses with
     | NotLoaded | Loading -> loadingView model.ConfigPath
-    | Loaded repoStatuses | Refreshing repoStatuses -> Layout.create (repoStatuses |> List.map (fun r -> r.Status))
+    | Loaded repoStatuses | Refreshing repoStatuses -> Layout.create repoStatuses
     | Error err -> errorView err
 
 let private refreshData model dispatch =

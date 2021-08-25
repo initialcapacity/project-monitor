@@ -33,7 +33,7 @@
     </Style>
 
     <Style Selector="Border.statusNotLoaded">
-        <Setter Property="Background" Value="#0000" />
+        <Setter Property="Background" Value="#444" />
     </Style>
 
     <Style Selector="Border.buildInProgress">
