@@ -42,24 +42,25 @@ let view (model: Model) (_: Dispatch<Msg>) =
     | Loaded repoStatuses | Refreshing repoStatuses -> Layout.create repoStatuses
     | Error err -> errorView err
 
-let private refreshData model dispatch =
+let private refreshRepo dispatch repoStatus =
     async {
-        let repoStatuses =
-            model.RepositoryStatuses
-            |> RemoteData.defaultValue []
+        let repo = repoStatus.Repository
+        let! result = fetchActionRuns "https://api.github.com" repo
 
-        for repoStatus in repoStatuses do
-            let repo = repoStatus.Repository
-            let! result = fetchActionRuns "https://api.github.com" repo
+        let msg =
+            result
+            |> RemoteData.ofResult
+            |> curry UpdateStatus repoStatus.Repository
 
-            let msg =
-                result
-                |> RemoteData.ofResult
-                |> curry UpdateStatus repoStatus.Repository
-
-            dispatch msg
+        dispatch msg
     }
-    |> Async.Start
+
+let private refreshData model dispatch =
+    model.RepositoryStatuses
+    |> RemoteData.defaultValue []
+    |> AsyncSeq.ofSeq
+    |> AsyncSeq.iterAsyncParallel (refreshRepo dispatch)
+    |> Async.RunSynchronously
 
 let private updateRepoStatus repo status allRepoStatuses =
     allRepoStatuses
