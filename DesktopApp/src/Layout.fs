@@ -4,7 +4,6 @@ open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.FuncUI.Types
 
-open DesktopApp.GithubApi
 open DesktopApp.StatusView
 
 [<RequireQualifiedAccess>]
@@ -71,7 +70,7 @@ module Layout =
             view s6 1 2
         ]
 
-    let create (statuses: RepositoryStatus list) =
+    let create (statuses: RepositoryAndStatus list) =
         let view =
             match statuses with
             | [s1] -> layout1 s1

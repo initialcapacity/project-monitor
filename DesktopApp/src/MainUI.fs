@@ -1,22 +1,23 @@
 ﻿module DesktopApp.MainUI
 
+open System
 open Elmish
 open FSharp.Control
 open Avalonia.FuncUI.DSL
 
+open DesktopApp.RemoteData
 open DesktopApp.Config
 open DesktopApp.GithubApi
-open DesktopApp.RemoteData
 open DesktopApp.StatusView
 open DesktopApp.Layout
 
 type Model =
     { ConfigPath: string
-      RepositoryStatuses: RemoteData<RepositoryStatus list, ConfigLoadError> }
+      RepositoryStatuses: RemoteData<RepositoryAndStatus list, ConfigLoadError> }
 
 type Msg =
     | ConfigLoaded of RemoteData<GithubRepoWorkflow list, ConfigLoadError>
-    | UpdateStatus of GithubRepoWorkflow * RemoteData<BuildRun, ApiError>
+    | UpdateStatus of RepositoryAndStatus
     | Refresh
 
 let private loadConfig path =
@@ -27,7 +28,7 @@ let private loadConfig path =
     }
 
 let init configPath _ =
-    { ConfigPath = configPath; RepositoryStatuses = NotLoaded },
+    { ConfigPath = configPath; RepositoryStatuses = RemoteData.Loading },
     Cmd.OfAsync.result (loadConfig configPath)
 
 let private loadingView path =
@@ -38,19 +39,32 @@ let private errorView _ =
 
 let view (model: Model) (_: Dispatch<Msg>) =
     match model.RepositoryStatuses with
-    | NotLoaded | Loading -> loadingView model.ConfigPath
-    | Loaded repoStatuses | Refreshing repoStatuses -> Layout.create repoStatuses
-    | Error err -> errorView err
+    | RemoteData.Loading -> loadingView model.ConfigPath
+    | RemoteData.Loaded repoStatuses -> Layout.create repoStatuses
+    | RemoteData.Error err -> errorView err
 
-let private refreshRepo dispatch repoStatus =
+let private refreshRepo dispatch previousRepoAndStatus =
+    let newBuildStatus s c =
+        { Status = s; Commit = c; Fetched = DateTimeOffset() }
+
     async {
-        let repo = repoStatus.Repository
+        let repo = previousRepoAndStatus.Repository
+        let previousStatus = previousRepoAndStatus.Status
+
         let! result = fetchActionRuns "https://api.github.com" repo
 
-        let msg =
-            result
-            |> RemoteData.ofResult
-            |> curry UpdateStatus repoStatus.Repository
+        let remoteBuildStatus =
+            match result, previousStatus with
+            | Result.Ok (actionStatus, commit), _ ->
+                Loaded (newBuildStatus actionStatus commit)
+            | Result.Error apiError, Loaded buildStatus ->
+                RefreshError (buildStatus, apiError)
+            | Result.Error apiError, RefreshError (buildStatus, _) ->
+                RefreshError (buildStatus, apiError)
+            | Result.Error apiError, _ ->
+                Error apiError
+
+        let msg = UpdateStatus { Repository = repo; Status = remoteBuildStatus }
 
         dispatch msg
     }
@@ -62,12 +76,12 @@ let private refreshData model dispatch =
     |> AsyncSeq.iterAsyncParallel (refreshRepo dispatch)
     |> Async.RunSynchronously
 
-let private updateRepoStatus repo status allRepoStatuses =
+let private updateRepoStatus repoStatus allRepoStatuses =
     allRepoStatuses
-    |> List.map (fun repoStatus ->
-        if repoStatus.Repository = repo
-            then { repoStatus with Status = status }
-            else repoStatus
+    |> List.map (fun r ->
+        if r.Repository = repoStatus.Repository
+            then repoStatus
+            else r
     )
 
 let private repositoriesToStatuses =
@@ -78,8 +92,8 @@ let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     | ConfigLoaded data ->
         let newStatuses = data |> RemoteData.map repositoriesToStatuses
         { model with RepositoryStatuses = newStatuses }, Cmd.ofMsg Refresh
-    | UpdateStatus (repo, status) ->
-        let newStatuses = model.RepositoryStatuses |> RemoteData.map (updateRepoStatus repo status)
+    | UpdateStatus repoStatus ->
+        let newStatuses = model.RepositoryStatuses |> RemoteData.map (updateRepoStatus repoStatus)
         { model with RepositoryStatuses = newStatuses }, Cmd.none
     | Refresh -> model, Cmd.ofSub (refreshData model)
 

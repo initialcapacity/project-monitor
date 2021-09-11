@@ -1,8 +1,9 @@
 ﻿module DesktopApp.Config
 
 open System.IO
-open DesktopApp.GithubApi
 open FSharp.Data
+
+open DesktopApp.GithubApi
 
 type private ConfigProvider = JsonProvider<"res/ConfigSample.json">
 

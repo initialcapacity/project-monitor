@@ -1,18 +1,28 @@
 ﻿module DesktopApp.StatusView
 
+open System
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
-
 open Avalonia.FuncUI.Types
 open Avalonia.Layout
+
 open DesktopApp.GithubApi
-open DesktopApp.RemoteData
+open DesktopApp
 
-type BuildStatus = RemoteData<BuildRun, ApiError>
+type BuildStatus =
+    { Status: ActionStatus
+      Commit: Commit
+      Fetched: DateTimeOffset }
 
-type RepositoryStatus =
+type RemoteBuildStatus =
+    | NotLoaded
+    | Loaded of BuildStatus
+    | Error of ApiError
+    | RefreshError of BuildStatus * ApiError
+
+type RepositoryAndStatus =
     { Repository: GithubRepoWorkflow
-      Status: BuildStatus }
+      Status: RemoteBuildStatus }
 
 let private statusBox repo message attrs =
     let viewAttrs = [
@@ -35,17 +45,17 @@ let private statusBox repo message attrs =
     ]
 
     Grid.create (viewAttrs @ attrs) :> IView
-    
+
 
 let private loadingView repo =
     statusBox repo "Loading..."
 
 let private loadedView repo buildRun =
     let message =
-        buildRun.Message.Split("\n")
+        buildRun.Commit.Message.Split("\n")
         |> Array.tryHead
         |> Option.defaultValue "-"
-        
+
     statusBox repo message
 
 let private errorView repo error =
@@ -65,16 +75,15 @@ let private buildClasses status =
     | Unknown -> ["buildUnknown"]
 
 module StatusView =
-    let create (repoStatus: RepositoryStatus) attrs =
+    let create (repoStatus: RepositoryAndStatus) attrs =
         let repo = repoStatus.Repository
 
         let classes, childView =
             match repoStatus.Status with
             | NotLoaded -> ["statusNotLoaded"], loadingView repo [ col 1; row 1 ]
-            | Loading -> ["statusNotLoaded"], loadingView repo [ col 1; row 1 ]
             | Loaded buildRun -> buildClasses buildRun.Status, loadedView repo buildRun [ col 1; row 1 ]
-            | Refreshing buildRun -> buildClasses buildRun.Status, loadedView repo buildRun [ col 1; row 1 ]
             | Error err -> ["statusNotLoaded"], errorView repo err [ col 1; row 1 ]
+            | RefreshError (buildRun, _) -> buildClasses buildRun.Status, loadedView repo buildRun [ col 1; row 1 ]
 
         let defaultAttrs = [
             Border.classes (["statusView"] @ classes)

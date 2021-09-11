@@ -2,20 +2,23 @@
 
 open FSharp.Data
 
+type ApiError =
+    | ParseError of exn
+    | ConnectionError of exn
+    | NoWorkflow
+
 type ActionStatus =
     | InProgress
     | Success
     | Failure
     | Unknown
 
-type BuildRun =
-    { Status: ActionStatus
-      Message: string }
+type Commit =
+    { Message: string
+      Sha: string }
 
-type ApiError =
-    | ParseError of exn
-    | ConnectionError of exn
-    | NoWorkflow
+type ApiActionStatusResult =
+    Result<ActionStatus * Commit, ApiError>
 
 type GithubRepoWorkflow =
     { Owner: string
@@ -30,6 +33,10 @@ let private tryParse json =
     with ex -> Error (ParseError ex)
 
 let private jsonWorkflowToActionRun (w: WorkflowsJsonProvider.WorkflowRun) =
+    let commit =
+        { Message = w.HeadCommit.Message
+          Sha = w.HeadCommit.Id }
+
     let status =
         match w.Status, w.Conclusion with
         | "completed", Some "success" -> Success
@@ -38,10 +45,9 @@ let private jsonWorkflowToActionRun (w: WorkflowsJsonProvider.WorkflowRun) =
         | "completed", _ -> Unknown
         | _, _ -> InProgress
 
-    { Status = status
-      Message = w.HeadCommit.Message }
+    status, commit
 
-let private jsonToActionRun (workflow: GithubRepoWorkflow) (json: WorkflowsJsonProvider.Root) =
+let private jsonToBuildStatus (workflow: GithubRepoWorkflow) (json: WorkflowsJsonProvider.Root) =
     json.WorkflowRuns
     |> Array.toSeq
     |> Seq.filter (fun run -> run.Name = workflow.Workflow)
@@ -67,5 +73,5 @@ let fetchActionRuns baseUrl workflow =
 
         return result
         |> Result.bind tryParse
-        |> Result.bind (jsonToActionRun workflow)
+        |> Result.bind (jsonToBuildStatus workflow)
     }

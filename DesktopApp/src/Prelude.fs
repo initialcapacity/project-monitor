@@ -1,6 +1,8 @@
 ﻿[<AutoOpen>]
 module DesktopApp.Prelude
 
+open System
+
 let curry f a b = f (a, b)
 
 [<RequireQualifiedAccess>]
@@ -11,6 +13,16 @@ module Result =
         | Ok x -> x
         | Error x -> f x
 
+    let toOption result =
+        match result with
+        | Ok x -> Some x
+        | Error _ -> None
+
+    let toBool result =
+        match result with
+        | Ok _ -> true
+        | Error _ -> false
+
 [<RequireQualifiedAccess>]
 module Try =
     let async wrapper f =
@@ -18,7 +30,8 @@ module Try =
             try
                 let! value = f ()
                 return Ok value
-            with ex -> return Error (wrapper ex)
+            with ex ->
+                return Error (wrapper ex)
         }
 
 [<RequireQualifiedAccess>]

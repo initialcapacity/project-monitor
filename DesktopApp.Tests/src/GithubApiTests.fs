@@ -13,6 +13,7 @@ let validResponse = """
       "status": "queued",
       "conclusion": null,
       "head_commit": {
+        "id": "acb5820ced9479c074f688cc328bf03f341a511d",
         "message": "Initial commit"
       }
     },
@@ -21,6 +22,7 @@ let validResponse = """
       "status": "queued",
       "conclusion": null,
       "head_commit": {
+        "id": "acb5820ced9479c074f688cc328bf03f341a511d",
         "message": "Second commit"
       }
     },
@@ -29,6 +31,7 @@ let validResponse = """
       "status": "completed",
       "conclusion": "success",
       "head_commit": {
+        "id": "acb5820ced9479c074f688cc328bf03f341a511d",
         "message": "Initial commit"
       }
     }
@@ -53,7 +56,8 @@ let tests =
             let result = Async.RunSynchronously asyncResult
 
             let expectedBuild =
-                { Status = InProgress
+                InProgress,
+                { Sha = "acb5820ced9479c074f688cc328bf03f341a511d"
                   Message = "Second commit" }
 
             let expectedRequest =
