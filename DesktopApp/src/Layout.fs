@@ -6,33 +6,35 @@ open Avalonia.FuncUI.Types
 
 open DesktopApp.StatusView
 
+let private view s row col =
+    StatusView.create s [ Grid.row row; Grid.column col ]
+
+let private grid rows columns children =
+    let def count = "*" |> List.replicate count |> String.concat ","
+
+    Grid.create [
+        Grid.rowDefinitions (def rows)
+        Grid.columnDefinitions (def columns)
+        Grid.children children
+    ] :> IView
+
+let private grid4 = grid 2 2
+
+let private grid6 = grid 2 3
+
 [<RequireQualifiedAccess>]
 module Layout =
     let private tooManyReposView =
-        TextBlock.subTitle "Too many repos, max is 1." []
+        TextBlock.subTitle "Too many repos, max is 6." []
 
     let private layout1 s1 =
         StatusView.create s1 []
-
-    let private view s row col =
-        StatusView.create s [ Grid.row row; Grid.column col ]
-
-    let private grid rows columns children =
-        let def count = "*" |> List.replicate count |> String.concat ","
-
-        Grid.create [
-            Grid.rowDefinitions (def rows)
-            Grid.columnDefinitions (def columns)
-            Grid.children children
-        ] :> IView
 
     let private layout2 s1 s2 =
         grid 1 2 [
             view s1 0 0
             view s2 0 1
         ]
-
-    let private grid4 = grid 2 2
 
     let private layout3 s1 s2 s3 =
         grid4 [
@@ -48,8 +50,6 @@ module Layout =
             view s3 1 0
             view s4 1 1
         ]
-
-    let private grid6 = grid 2 3
 
     let private layout5 s1 s2 s3 s4 s5 =
         grid6 [

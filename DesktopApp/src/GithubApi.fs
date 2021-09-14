@@ -60,7 +60,6 @@ let fetchActionRuns baseUrl workflow =
         "Authorization", $"token %s{workflow.Token}"
         "User-Agent", "ProjectMonitor/1.0"
     ]
-
     let doRequest () =
         Http.AsyncRequestString(
             $"%s{baseUrl}/repos/%s{workflow.Owner}/%s{workflow.Repo}/actions/runs",
