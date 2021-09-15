@@ -26,6 +26,13 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <Style Selector="TextBlock.note">
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="17.0" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
     <Style Selector="Border.statusView">
         <Setter Property="BorderThickness" Value="16.0" />
         <Setter Property="CornerRadius" Value="16.0" />

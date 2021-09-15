@@ -28,3 +28,4 @@ module TextBlock =
 
     let title = textBlock ["title"]
     let subTitle = textBlock ["subTitle"]
+    let note = textBlock ["note"]

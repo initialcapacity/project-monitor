@@ -24,8 +24,8 @@ let private grid6 = grid 2 3
 
 [<RequireQualifiedAccess>]
 module Layout =
-    let private tooManyReposView =
-        TextBlock.subTitle "Too many repos, max is 6." []
+    let private tooManyReposView max =
+        TextBlock.subTitle $"Too many repos, max is %d{max}." []
 
     let private layout1 s1 =
         StatusView.create s1 []
@@ -79,7 +79,7 @@ module Layout =
             | [s1; s2; s3; s4] -> layout4 s1 s2 s3 s4
             | [s1; s2; s3; s4; s5] -> layout5 s1 s2 s3 s4 s5
             | [s1; s2; s3; s4; s5; s6] -> layout6 s1 s2 s3 s4 s5 s6
-            | _ -> tooManyReposView
+            | _ -> tooManyReposView 6
 
         DockPanel.create [
             DockPanel.margin 16.0
